@@ -79,7 +79,6 @@ class MachUp(object):
         input_data['reference'] = self.reference_data()
 
         # Create the new input file in the job directory
-        print('Job dir = {}'.format(self.jobdir))
         with open(self.jobdir + os.sep + 'input.json', 'w') as inp_new:
             json.dump(input_data, inp_new, indent = 4)
             
