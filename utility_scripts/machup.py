@@ -5,36 +5,39 @@ import time
 import json
 from collections import OrderedDict
 
-import airfoil
-import wing
-
-
-def NewJoukowskiElliptic(af_thickness = 0.04, af_CLd = 0.0, af_npts = 40,
-                         wing_RA = 'Circular', wing_b = 4.0 / np.pi, wing_npts = 80,
-                         mu_template = 'input.json', mu_cmd = 'MachUp.exe', mu_dir = None,
-                         mu_solver = 'nonlinear', mu_lowra_method = 'none'):
-    a = airfoil.Joukowski(af_thickness, af_CLd, af_npts)
-    w = wing.Elliptic(wing_RA, wing_b, wing_npts)
-    m = MachUp(a, w, mu_template, mu_cmd, mu_dir, mu_solver, mu_lowra_method)
-    return m
+import phd_scripts
+from phd_scripts.utility_scripts import airfoil
+from phd_scripts.utility_scripts import wing
 
 
 class MachUp(object):
     """Wrapper class for creating, running, and post-processing MachUp lifting-line analyses
     """
-    def __init__(self, airfoil, wing, template = 'input.json', cmd = 'MachUp.exe', dir = None,
-            solver = 'nonlinear', lowra_method = 'none'):
+    def __init__(self, airfoil, wing, solver = 'nonlinear', lowra_method = 'none',
+            template = 'input.json', templatedir = None, cmd = 'MachUp.exe',
+            cmddir = None, jobdir = None):
         """Constructor
         """
-        self.template = template
+        # Set the wing geometry
         self.airfoil = airfoil
         self.wing = wing
-        self.cmd = cmd
-        self.dir = dir if dir is not None else self.name
         
+        # Set the solver parameters
         self._solver = solver
         self._lowra_method = lowra_method
+
+        # Set the file and path names
+        self.template = template
+        self.templatedir = templatedir if templatedir is not None else (
+                phd_scripts.__path__[0] + os.sep + 'templates')
+
+        self.cmd = cmd
+        self.cmddir = cmddir if cmddir is not None else (
+                phd_scripts.__path__[0] + os.sep + 'executables')
+
+        self.jobdir = jobdir if jobdir is not None else self.name
         
+        # Result variables
         self._distributions = None
         self._forces = None
         
@@ -46,10 +49,10 @@ class MachUp(object):
         error = self.airfoil.create_airfoil()
         if error: return None
         
-        
         # Make sure the template file exists
-        if not os.path.isfile(self.template):
-            print("Error: Input template file '{}' does not exist.".format(self.template))
+        template = self.templatedir + os.sep + self.template
+        if not os.path.isfile(template):
+            print("Error: Input template file '{}' does not exist.".format(template))
             return None
 
         # Create the job directory
@@ -57,8 +60,11 @@ class MachUp(object):
         if not created: return False
         
         # Read and parse the template file
-        with open(self.template, 'r') as inp_orig:
+        with open(template, 'r') as inp_orig:
             input_data = json.load(inp_orig, object_pairs_hook = OrderedDict)
+            
+        # Set the airfoild database location
+        input_data['airfoil_DB'] = self.airfoil.dbdir
             
         # Set the solver type (linear | nonlinear)
         input_data['solver']['type'] = self._solver
@@ -73,7 +79,8 @@ class MachUp(object):
         input_data['reference'] = self.reference_data()
 
         # Create the new input file in the job directory
-        with open(self.dir + os.sep + 'input.json', 'w') as inp_new:
+        print('Job dir = {}'.format(self.jobdir))
+        with open(self.jobdir + os.sep + 'input.json', 'w') as inp_new:
             json.dump(input_data, inp_new, indent = 4)
             
         return True
@@ -82,10 +89,10 @@ class MachUp(object):
     def execute(self):
         # Move into the job directory
         cwd = os.getcwd()
-        os.chdir(self.dir)
+        os.chdir(self.jobdir)
         
         # Execute MachUp
-        os.system(self.cmd + " input.json > stdout")
+        os.system(self.cmddir + os.sep + self.cmd + " input.json > stdout")
         
         # Return to the original work directory
         os.chdir(cwd)
@@ -96,7 +103,8 @@ class MachUp(object):
         """Read and parse the distributions result file
         """
         if self._distributions is None:
-            self._distributions = np.genfromtxt(self.dir + os.sep + 'input_distributions.txt', names = True)
+            output_file = self.jobdir + os.sep + 'input_distributions.txt'
+            self._distributions = np.genfromtxt(output_file, names = True)
             
         return self._distributions
         
@@ -176,7 +184,7 @@ class MachUp(object):
         """Read and parse the forces result file
         """
         if self._forces is None:
-            with open(self.dir + os.sep + 'input_forces.json', 'r') as forces_file:
+            with open(self.jobdir + os.sep + 'input_forces.json', 'r') as forces_file:
                 self._forces = json.load(forces_file, object_pairs_hook = OrderedDict)
                 
         return self._forces
@@ -199,9 +207,9 @@ class MachUp(object):
     def create_job_directory(self, overwrite = None):
         """Creates a directory for the MachUp analysis and copies necessary files
         """
-        if os.path.isdir(self.dir):
+        if os.path.isdir(self.jobdir):
             if overwrite is None:
-                print("Directory already exists: " + self.dir)
+                print("Directory already exists: " + self.jobdir)
                 ow = input("Do you want to overwrite? (Y/n)\n")
                 if len(ow) > 0 and (ow[0] == 'n' or ow[0] == 'N'):
                     overwrite = False
@@ -209,15 +217,13 @@ class MachUp(object):
                     overwrite = True
                     
             if overwrite:
-                shutil.rmtree(self.dir)
+                shutil.rmtree(self.jobdir)
                 time.sleep(1.0) # Give the file system some time...
             else:
                 return False
     
-        # Set up the job directory and copy MachUp
-        os.mkdir(self.dir)
-        time.sleep(1.0) # Give the file system some time...
-        shutil.copyfile(self.cmd, self.dir + os.sep + self.cmd)
+        # Set up the job directory
+        os.mkdir(self.jobdir)
         
         return True
         
@@ -267,4 +273,4 @@ class MachUp(object):
         
     @property
     def panair_input_file(self):
-        return self.dir + os.sep + 'input_view.panair'
+        return self.jobdir + os.sep + 'input_view.panair'

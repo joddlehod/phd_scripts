@@ -4,15 +4,20 @@ import shutil
 import json
 from collections import OrderedDict
 
+import phd_scripts
+
 
 class FlatPlate(object):
     """Defines the 2D airfoil characteristics of a flat plate
     """
-    def __init__(self):
+    def __init__(self, dbdir = None):
         """Constructor
         """
         self.CL_alpha = 2 * np.pi
         self.name = "flat_plate"
+        self.dbdir = dbdir
+        if self.dbdir is None:
+            self.dbdir = phd_scripts.__path__[0] + os.sep + 'AirfoilDatabase'
     
     
     def create_airfoil(self, cmd = None, dbdir = "AirfoilDatabase"):
@@ -25,7 +30,7 @@ class Joukowski(object):
     This class is used to define a 2D Joukowski airfoil
     """
     
-    def __init__(self, t, cld, npts):
+    def __init__(self, t, cld, npts, cmd = 'Joukowski.exe', cmddir = None, dbdir = None):
         """Constructor
         
         Inputs
@@ -41,6 +46,15 @@ class Joukowski(object):
             print("Error: Airfoil points must be even!")
             print("       Setting number of points to {}".format(npts + 1))
             self.npts += 1
+            
+        self.cmd = cmd
+        self.cmddir = cmddir
+        if self.cmddir is None:
+            self.cmddir = phd_scripts.__path__[0] + os.sep + 'executables'
+            
+        self.dbdir = dbdir
+        if self.dbdir is None:
+            self.dbdir = phd_scripts.__path__[0] + os.sep + 'AirfoilDatabase'
     
     
     @property
@@ -49,16 +63,16 @@ class Joukowski(object):
         return name.replace('.', 'p')
 
 
-    def create_airfoil(self, cmd = "Joukowski.exe", dbdir = "AirfoilDatabase"):
-        # Only run the panel code if the airfoil doesn't already exist in the database
-        airfoil_json_name = dbdir + os.sep + self.name + ".json"
-        airfoil_profile_name = dbdir + os.sep + self.name + "_profile.txt"
+    def create_airfoil(self):
+        airfoil_json_name = self.dbdir + os.sep + self.name + ".json"
+        airfoil_profile_name = self.dbdir + os.sep + self.name + "_profile.txt"
         if ((not os.path.isfile(airfoil_json_name)) or
                 (not os.path.isfile(airfoil_profile_name))):
             if os.path.isfile(airfoil_json_name): os.remove(airfoil_json_name)
             if os.path.isfile(airfoil_profile_name): os.remove(airfoil_profile_name)
 
             # Make sure the executable exists in the current directory
+            cmd = self.cmddir + os.sep + self.cmd
             if not os.path.isfile(cmd):
                 print("Error: Missing panel code executable {}".format(cmd))
                 return True
@@ -95,12 +109,10 @@ class Joukowski(object):
 
             # Make sure the JSON template file exists
             json_template_name = "flat_plate"
-            json_template_file = json_template_name + ".json"
+            json_template_file = self.dbdir + os.sep + json_template_name + ".json"
             if not os.path.isfile(json_template_file):
-                json_template_file = dbdir + os.sep + json_template_file
-                if not os.path.isfile(json_template_file):
-                    print("Error: Missing JSON template file {}".format(json_template_file))
-                    return True
+                print("Error: Missing JSON template file {}".format(json_template_file))
+                return True
                 
             # Read the JSON file template
             with open(json_template_file, "r") as json_template:

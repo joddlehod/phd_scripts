@@ -3,10 +3,17 @@ import os
 import shutil
 import time
 import re
-import plot
 import glob
+import matplotlib.pyplot as plt
 
-import richardson_extrapolation
+from phd_scripts.utility_scripts import richardson_extrapolation
+
+
+# Set up global plot parameters
+plt.rc('font', **{'family':'serif', 'serif':['Times New Roman']})
+plt.rcParams["font.family"] = "Times New Roman"
+plt.rcParams["font.size"] = 10
+plt.rcParams["lines.markersize"] = 4
 
 
 class Panair(object):
@@ -198,10 +205,17 @@ class Panair(object):
         
         
     def plot_sec_CL(self):
-        plot.new(r'$y/b', r'Section $C_L$', [min(self.wing.yc), max(self.wing.yc)],
-            [min(self.sec_CL), max(self.sec_CL)])
-        plot.add(self.wing.yc, self.sec_CL, self.name)
-        plot.show('best')
+        plt.figure(figsize=(6.0, 5.0))
+        plt.plot(self.wing.yc / b, self.sec_CL, color='k', linestyle=(0, (None, None)),
+                marker='o', fillstyle='none', markersize=6)
+                
+        plt.xlabel(r'$y/b$')
+        plt.ylabel(r'$c_l$')
+        plt.xlim(0.0, 0.5)
+        plt.ylim(0.0, 1.1 * max(self.sec_CL))
+        plt.legend(loc='lower left')
+        plt.tight_layout()
+        plt.show()
         
         
 def extrapolate_CL(panair1, panair2, panair3):

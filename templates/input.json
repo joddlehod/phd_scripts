@@ -1,0 +1,67 @@
+{
+"airfoil_DB": "../AirfoilDatabase",
+"run": {
+    "panair" : "",
+    "forces" : "",
+    "distributions" : ""
+},
+"solver":{
+	"type" : "nonlinear",
+	"convergence" : 1.000000001e-10,
+	"relaxation": 0.9
+},
+"plane": {
+	"name": "myairplane",
+	"CGx": 0.0,
+	"CGy": 0.0,
+	"CGz": 0.0
+},
+"reference": {
+	"area": 1.2732395447351626861,
+	"longitudinal_length": 1.0,
+	"lateral_length": 1.2732395447351626861
+},
+"condition": {
+	"alpha": 1.0,
+	"beta": 0.0,
+    "ground": 0.0
+},
+"controls" : {
+    "aileron" : {
+        "is_symmetric" : 0,
+        "deflection" : 0.0
+    },
+    "elevator" : {
+        "is_symmetric" : 1,
+        "deflection" : 0.0
+    }
+},
+"wings": {
+	"wing_1" : {
+		"ID": 1,
+		"side": "both",
+		"connect": {
+			"ID": 0,
+			"location": "root",
+			"dx" : 0.0,
+			"dy" : 0.0,
+			"dz" : 0.0,
+            "yoffset" : 0.0
+		},
+		"span": 0.63661977236758134307553505349006,
+		"sweep": 0.0,
+		"dihedral": 0.0,
+		"mounting_angle": 0.0,
+		"washout": 0.0,
+		"root_chord": 1.2732395447351626861,
+		"tip_chord": -1.0,
+        "airfoils" : {
+            "joukowski_t0p04_cl0p0_40" : ""
+        },
+		"grid": 40,
+        "root_clustering": 0,
+        "tip_clustering": 1,
+        "low_aspect_ratio_method": "Kuchemann"
+	}
+}
+}

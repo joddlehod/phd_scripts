@@ -40,7 +40,7 @@ class Wing(object):
         self.nSec = nSec            # Number of spanwise sections per semispan
         
         if symm:
-            self.basename = "ra{}_grid{}_symm".format(self.RAString, self.nSec)
+            self.basename = "ra{}_grid{}".format(self.RAString, self.nSec)
         else:
             self.basename = "ra{}_grid{}_full".format(self.RAString, self.nSec)
         if suffix is not None: self.basename += "_{}".format(suffix)

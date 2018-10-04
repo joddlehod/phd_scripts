@@ -1,8 +1,8 @@
-import airfoil
-import wing
-import machup
-import panair
-import richardson_extrapolation
+from phd_scripts.utility_scripts import airfoil
+from phd_scripts.utility_scripts import wing
+from phd_scripts.utility_scripts import machup
+from phd_scripts.utility_scripts import panair
+from phd_scripts.utility_scripts import richardson_extrapolation
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -48,14 +48,13 @@ def sec_cl(c, RA, RT = None, viz = False, npts = [20, 40, 80], ts = [0.16, 0.08,
             a = airfoil.Joukowski(t, 0.0, npt)
             
             if RT is None:
-                w = wing.Elliptic(RA, b, npt, symm=True, suffix='sqc')
+                w = wing.Elliptic(RA, b, npt, symm=True)
             elif RT == 1.0:
-                w = wing.Rectangular(RA, b, npt, symm=True, suffix='sqc')
+                w = wing.Rectangular(RA, b, npt, symm=True)
             else:
-                w = wing.Tapered(RA, RT, b, npt, symm=True, suffix='sqc')
+                w = wing.Tapered(RA, RT, b, npt, symm=True)
             
-            m = machup.MachUp(a, w, template = 'input_symm.json',
-                    cmd = 'MachUp.exe')
+            m = machup.MachUp(a, w)
             if(m.setup(overwrite = False)):
                 m.execute()
         
@@ -119,12 +118,12 @@ def sec_cl(c, RA, RT = None, viz = False, npts = [20, 40, 80], ts = [0.16, 0.08,
         plt.tight_layout()
         plt.show()
 
-    return (ys[0], cl_ext)
+    return (ys[0] / b, cl_ext)
     
     
 def cla(c, RA, RT = None, viz = False, npts = [20, 40, 80], ts = [0.16, 0.08, 0.04]):
     # Calculate the section lift distribution
-    ys, cl_ext = sec_cl(c, RA, RT, viz, npts, ts)
+    yb, cl_ext = sec_cl(c, RA, RT, viz, npts, ts)
             
     # Calculate the total lift coefficient and the wing lift slope
     if RT is None:
