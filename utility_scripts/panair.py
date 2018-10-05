@@ -6,6 +6,7 @@ import re
 import glob
 import matplotlib.pyplot as plt
 
+import phd_scripts
 from phd_scripts.utility_scripts import richardson_extrapolation
 
 
@@ -19,14 +20,19 @@ plt.rcParams["lines.markersize"] = 4
 class Panair(object):
     """Wrapper class for creating, running, and post-processing Panair panel code analyses
     """
-    def __init__(self, airfoil, wing, input_file, cmd = 'panair.exe', dir = None):
+    def __init__(self, airfoil, wing, input_file,
+            cmd = 'panair.exe', cmddir = None, jobdir = None):
         """Constructor
         """
         self.airfoil = airfoil
         self.wing = wing
         self.input_file = input_file
+        
         self.cmd = cmd
-        self.dir = dir if dir is not None else self.name
+        self.cmddir = cmddir if cmddir is not None else (
+                phd_scripts.__path__[0] + os.sep + 'executables')
+                
+        self.jobdir = jobdir if jobdir is not None else self.name
         
         self._distributions = None
         self._sec_y = None
@@ -41,9 +47,9 @@ class Panair(object):
             return True
             
         # Create the job directory
-        if os.path.isdir(self.dir):
+        if os.path.isdir(self.jobdir):
             if overwrite is None:
-                print("Directory already exists: " + self.dir)
+                print("Directory already exists: " + self.jobdir)
                 ow = input("Do you want to overwrite? (Y/n)\n")
                 if len(ow) > 0 and (ow == 'n' or ow == 'N'):
                     overwrite = False
@@ -51,24 +57,25 @@ class Panair(object):
                     overwrite = True
                     
             if overwrite:
-                shutil.rmtree(self.dir)
+                shutil.rmtree(self.jobdir)
                 time.sleep(1.0) # Give the file system some time...
             else:
                 return False
         
         # Create the new job directory
-        os.mkdir(self.dir)
+        os.mkdir(self.jobdir)
         time.sleep(1.0) # Give the file system some time...
         
         # Copy the executable into the job directory
-        shutil.copyfile(self.cmd, self.dir + os.sep + self.cmd)
+        shutil.copyfile(self.cmddir + os.sep + self.cmd,
+                self.jobdir + os.sep + self.cmd)
         
         # Copy the input file into the job directory
         input_file_new = self.name + '.panair'
-        shutil.copyfile(self.input_file, self.dir + os.sep + input_file_new)
+        shutil.copyfile(self.input_file, self.jobdir + os.sep + input_file_new)
         
         # Create an input file to pipe into the execution command
-        with open(self.dir + os.sep + 'pipe', 'w') as pipe_file:
+        with open(self.jobdir + os.sep + 'pipe', 'w') as pipe_file:
             pipe_file.write(input_file_new + '\n')
 
         return True
@@ -79,7 +86,7 @@ class Panair(object):
         """
         # Move into the job directory
         cwd = os.getcwd()
-        os.chdir(self.dir)
+        os.chdir(self.jobdir)
         
         # Execute Panair
         os.system(self.cmd + " < pipe > panair_stdout")
@@ -93,7 +100,7 @@ class Panair(object):
     @property
     def distributions(self):
         if self._distributions is None:
-            resfilename = self.dir + os.sep + 'agps'
+            resfilename = self.jobdir + os.sep + 'agps'
             if not os.path.isfile(resfilename):
                 print("Panair output file '{}' does not exist!".format(resfilename))
                 return None
