@@ -86,15 +86,10 @@ class MachUp(object):
         
 
     def execute(self):
-        # Move into the job directory
-        cwd = os.getcwd()
-        os.chdir(self.jobdir)
-        
         # Execute MachUp
-        os.system(self.cmddir + os.sep + self.cmd + " input.json > stdout")
-        
-        # Return to the original work directory
-        os.chdir(cwd)
+        cmd = self.cmddir + os.sep + self.cmd
+        job = self.jobdir + os.sep + 'input.json'
+        os.system("{} {} > stdout".format(cmd, job))
         
         
     @property

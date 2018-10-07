@@ -118,20 +118,23 @@ def sec_cl(c, RA, RT = None, viz = False, npts = [20, 40, 80], ts = [0.16, 0.08,
         plt.tight_layout()
         plt.show()
 
-    return (ys[0] / b, cl_ext)
+    return (ys[0], cl_ext, res[0].sec_c)
     
     
 def cla(c, RA, RT = None, viz = False, npts = [20, 40, 80], ts = [0.16, 0.08, 0.04]):
+    if RA == 'Circular': b = 4.0 / np.pi * c
+    else: b = RA * c
+
     # Calculate the section lift distribution
-    yb, cl_ext = sec_cl(c, RA, RT, viz, npts, ts)
+    yb, cl_ext, c = sec_cl(c, RA, RT, viz, npts, ts)
             
     # Calculate the total lift coefficient and the wing lift slope
     if RT is None:
-        w = wing.Elliptic(RA, b, npts[0], symm=True, suffix='sqc')
+        w = wing.Elliptic(RA, b, npts[0], symm=True)
     elif RT == 1.0:
-        w = wing.Rectangular(RA, b, npts[0], symm=True, suffix='sqc')
+        w = wing.Rectangular(RA, b, npts[0], symm=True)
     else:
-        w = wing.Tapered(RA, RT, b, npts[0], symm=True, suffix='sqc')
+        w = wing.Tapered(RA, RT, b, npts[0], symm=True)
         
     cl = np.sum(cl_ext * w.sec_Area) / np.sum(w.sec_Area)
     return cl / np.radians(1.0)

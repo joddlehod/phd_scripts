@@ -238,19 +238,12 @@ def extrapolate_CL(panair1, panair2, panair3):
     panair2 = medium-mesh analysis
     panair3 = fine-mesh analysis
     """
-    yp1 = panair1.sec_y
     clp1 = panair1.sec_CL
     
-    yp2 = np.asarray([panair2.wing.ycoord(
-            0.5 * (panair2.wing.thetacoord(y1) + panair2.wing.thetacoord(y2)))
-            for y1, y2 in zip(panair2.sec_y[:-1:2], panair2.sec_y[1::2])])
     clp2 = np.asarray([(cl1 * a1 + cl2 * a2) / (a1 + a2) for a1, a2, cl1, cl2 in
             zip(panair2.wing.sec_Area[:-1:2], panair2.wing.sec_Area[1::2],
             panair2.sec_CL[:-1:2], panair2.sec_CL[1::2])])
     
-    yp3 = np.asarray([panair3.wing.ycoord(
-            0.5 * (panair3.wing.thetacoord(y1) + panair3.wing.thetacoord(y2)))
-            for y1, y2 in zip(panair3.sec_y[1:-2:4], panair2.sec_y[2:-1:4])])
     clp3 = np.asarray([(cl1 * a1 + cl2 * a2 + cl3 * a3 + cl4 * a4) / (a1 + a2 + a3 + a4)
             for a1, a2, a3, a4, cl1, cl2, cl3, cl4 in zip(
             panair3.wing.sec_Area[:-3:4], panair3.wing.sec_Area[1:-2:4],
@@ -258,8 +251,8 @@ def extrapolate_CL(panair1, panair2, panair3):
             panair3.sec_CL[:-3:4], panair3.sec_CL[1:-2:4],
             panair3.sec_CL[2:-1:4], panair3.sec_CL[3::4])])
     
-    y_extrapolated = yp1
     (cl_extrapolated, order) = richardson_extrapolation.extrapolate(1, 2, 4, clp1, clp2, clp3)
+    y_extrapolated = panair1.sec_y
     return (y_extrapolated, cl_extrapolated)
 
 
