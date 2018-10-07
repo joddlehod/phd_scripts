@@ -1,6 +1,6 @@
-import pralines
-import wing
-import richardson_extrapolation
+from phd_scripts.utility_scripts import pralines
+from phd_scripts.utility_scripts import wing
+from phd_scripts.utility_scripts import richardson_extrapolation
 
 import numpy as np
 

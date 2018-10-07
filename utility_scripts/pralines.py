@@ -3,20 +3,29 @@ import os
 import shutil
 import time
 
-import airfoil
-import wing
+import phd_scripts
+from phd_scripts.utility_scripts import airfoil
+from phd_scripts.utility_scripts import wing
 
 
 class Pralines(object):
     """Wrapper class for creating, running, and post-processing Pralines lifting line analyses
     """
-    def __init__(self, wing, a0, larc, cmd = 'PrandtlsLiftingLine.exe', dir = None):
+    def __init__(self, wing, a0, larc, cmd = 'PrandtlsLiftingLine.exe',
+            cmddir = None, jobdir = None):
+        """Constructor
+        """
         self.wing = wing  # Wing object
         self.a0 = a0  # Section lift slope
         self.larc = larc  # Low aspect ratio correction method
                           # Options are ('Classical', 'Hodson', 'ModifiedSlender')
+                          
         self.cmd = cmd  # Execution command
-        self.dir = dir if dir is not None else self.name  # Job directory
+        self.cmddir = cmddir if cmddir is not None else (
+                phd_scripts.__path__[0] + os.sep + 'executables')
+        self.cmddir = os.path.abspath(self.cmddir)
+                
+        self.jobdir = jobdir if jobdir is not None else self.name  # Job directory
         
         
     @property
@@ -96,7 +105,7 @@ class Pralines(object):
         lines.append('Q')
         
         # Create the new input file in the job directory
-        with open(self.dir + os.sep + 'input.txt', 'w') as inp_new:
+        with open(self.jobdir + os.sep + 'input.txt', 'w') as inp_new:
             inp_new.write('\n'.join([str(line) for line in lines]))
 
         return True
@@ -105,10 +114,12 @@ class Pralines(object):
     def execute(self):
         # Move into the job directory
         cwd = os.getcwd()
-        os.chdir(self.dir)
+        os.chdir(self.jobdir)
         
         # Execute Pralines
-        os.system(self.cmd + " < input.txt")
+        cmd = self.cmddir + os.sep + self.cmd
+        print(cmd)
+        os.system(cmd + " < input.txt")
         
         # Return to the original work directory
         os.chdir(cwd)
@@ -116,7 +127,7 @@ class Pralines(object):
         
     def sec_cl(self):
         # Parse the output file
-        with open(self.dir + os.sep + 'liftcoefficient.dat', 'r') as f:
+        with open(self.jobdir + os.sep + 'liftcoefficient.dat', 'r') as f:
             lines = f.readlines()
             
         ys = []
@@ -132,7 +143,7 @@ class Pralines(object):
     @property
     def WingLiftSlope(self):
         # Parse the output file
-        with open(self.dir + os.sep + 'output.txt', 'r') as f:
+        with open(self.jobdir + os.sep + 'output.txt', 'r') as f:
             lines = f.readlines()
         
         if type(self.wing) == wing.Elliptic:
@@ -144,7 +155,7 @@ class Pralines(object):
     @property
     def WingLiftCoefficient(self):
         # Parse the output file
-        with open(self.dir + os.sep + 'output.txt', 'r') as f:
+        with open(self.jobdir + os.sep + 'output.txt', 'r') as f:
             lines = f.readlines()
         
         if type(self.wing) == wing.Elliptic:
@@ -156,9 +167,9 @@ class Pralines(object):
     def create_job_directory(self, overwrite = None):
         """Creates a directory for the Pralines analysis and copies necessary files
         """
-        if os.path.isdir(self.dir):
+        if os.path.isdir(self.jobdir):
             if overwrite is None:
-                print("Directory already exists: " + self.dir)
+                print("Directory already exists: " + self.jobdir)
                 ow = input("Do you want to overwrite? (Y/n)\n")
                 if len(ow) > 0 and (ow[0] == 'n' or ow[0] == 'N'):
                     overwrite = False
@@ -166,15 +177,13 @@ class Pralines(object):
                     overwrite = True
                     
             if overwrite:
-                shutil.rmtree(self.dir)
+                shutil.rmtree(self.jobdir)
                 time.sleep(0.01) # Give the file system some time...
             else:
                 return False
     
         # Set up the job directory and copy MachUp
-        os.mkdir(self.dir)
-        time.sleep(0.01) # Give the file system some time...
-        shutil.copyfile(self.cmd, self.dir + os.sep + self.cmd)
+        os.mkdir(self.jobdir)
         
         return True
         
