@@ -44,4 +44,4 @@ def sec_cl(A, a0 = 2.0 * np.pi, RT = None, lowra = 'Classical'):
         
     wing_cl = pr.WingLiftCoefficient
     ys, cls = pr.sec_cl()
-    return (ys, [wing_cl * cl for cl in cls], [4.0 * c / np.pi * np.sqrt(1.0 - (2.0 * y)**2) for y in ys])
+    return (ys[npts:], [wing_cl * cl for cl in cls[npts:]], w.c)

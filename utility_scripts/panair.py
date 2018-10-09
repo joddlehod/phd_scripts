@@ -174,8 +174,9 @@ class Panair(object):
         """
         if self._sec_y is None:
             secY = np.asarray([dist['y'][0] for dist in self.distributions])
-            self._sec_y = interpolate(self.wing.y[:-1], self.wing.y[1:],
-                    secY[:-1], secY[1:], self.wing.yc)
+            self._sec_y = 0.5 * (secY[:-1] + secY[1:])
+#            self._sec_y = interpolate(self.wing.y[:-1], self.wing.y[1:],
+#                    secY[:-1], secY[1:], self.wing.yc)
             
         return self._sec_y
     

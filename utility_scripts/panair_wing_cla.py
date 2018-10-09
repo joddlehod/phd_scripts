@@ -72,7 +72,7 @@ def sec_cl(c, RA, RT = None, viz = False, npts = [20, 40, 80], ts = [0.16, 0.08,
             plt.figure(figsize=(6.0, 5.0))
             max_cl = 0.0
             for npt, p, m in zip(npts, res, markers):
-                plt.plot(p.wing.yc / b, p.sec_CL, label='{0} x {0}'.format(npt), color='k',
+                plt.plot(p.sec_y / b, p.sec_CL, label='{0} x {0}'.format(npt), color='k',
                         linestyle=(0, ()), marker=m, fillstyle='none', markersize=6)
                 max_cl = max(max_cl, max(p.sec_CL))
 
