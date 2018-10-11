@@ -1,5 +1,5 @@
 import sys
-sys.path.append('..\\..\\')
+sys.path.append('..\\..\\..\\')
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,13 +8,9 @@ from itertools import cycle
 from phd_scripts.utility_scripts import wing
 from phd_scripts.utility_scripts import pralines
 from phd_scripts.utility_scripts import panair_wing_cla
-from phd_scripts.utility_scripts import machup_wing_cla
 
 # Use lift slope from thin airfoil theory
 a0 = 2.0 * np.pi
-
-# Define the array of taper ratios
-RT = np.linspace(0.5, 1.0, 5)
 
 # Define the array of aspect ratios
 A = np.linspace(0.1, 8.0, 80)
@@ -53,12 +49,11 @@ for aspect_ratio in A:
 #        np.linspace(4.0, 5.0, 2), np.linspace(6.0, 10.0, 3)))
 A_panair = np.linspace(1.0, 8.0, 8)
 c = 10.0
-cla_panair = [panair_wing_cla.cla(c, x, rt, False) for x in A_panair]
-#cla_machup = [machup_wing_cla_tapered.a_machup(x, rt, False) for x in A_panair]
+cla_panair = [panair_wing_cla.cla(c, x, rt, True, True, False) for x in A_panair]
 
 # Define cycles for line patterns and markers
 #lines = cycle([(0, ()), (0, (1,1)), (0, (10,10)), (0, (3,10,1,10)), (0, (10,10,5,10)), (0, (3,10,1,10,1,10)), (0, (5,10)), (0, (15,5,1,5,5,5,1,5)), (0, (1,5))])
-lines = cycle([(0, ()), (0, (1,1)), (0, (10,10)), (0, (3,10,1,10))])
+lines = cycle([(0, ()), (0, (1,1)), (0, (5,5)), (0, (3,5,1,5))])
 markers = cycle(['o', 's', '^', 'D', 'v'])
 lw = 0.5  # Line width
 
@@ -70,7 +65,7 @@ plt.rcParams["lines.markersize"] = 4
 plt.figure(figsize = (4.0, 2.5))
 
 # Plot the analytical relations
-lines = cycle([(0, ()), (0, (1,1)), (0, (10,10)), (0, (3,10,1,10))])
+lines = cycle([(0, ()), (0, (1,1)), (0, (5,5)), (0, (3,5,1,5))])
 plt.plot(A, a_classical, label = "Classical lifting line theory",
         color = 'k', linewidth = lw, linestyle = next(lines))
 #plt.plot(A, a_slender, label = "Slender wing theory",
