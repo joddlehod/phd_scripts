@@ -13,19 +13,14 @@ from phd_scripts.utility_scripts import wing
 class MachUp(object):
     """Wrapper class for creating, running, and post-processing MachUp lifting-line analyses
     """
-    def __init__(self, airfoil, wing, solver = 'nonlinear', lowra_method = 'none',
-            template = 'input.json', templatedir = None, cmd = 'MachUp.exe',
-            cmddir = None, jobdir = None):
+    def __init__(self, airfoil, wing, template = 'input.json', templatedir = None,
+            cmd = 'MachUp.exe', cmddir = None, jobdir = None):
         """Constructor
         """
         # Set the wing geometry
         self.airfoil = airfoil
         self.wing = wing
         
-        # Set the solver parameters
-        self._solver = solver
-        self._lowra_method = lowra_method
-
         # Set the file and path names
         self.template = template
         self.templatedir = templatedir if templatedir is not None else (
@@ -35,11 +30,18 @@ class MachUp(object):
         self.cmddir = cmddir if cmddir is not None else (
                 phd_scripts.__path__[0] + os.sep + 'executables')
 
-        self.jobdir = jobdir if jobdir is not None else self.name
+        self.jobdir = jobdir
         
         # Result variables
         self._distributions = None
         self._forces = None
+        
+        # The following parameters are used to control modification of the
+        # template file. If None, the value in the template file will be used.
+        # If not None, the value of the parameter will be written to the new
+        # job file.
+        self.solver = None
+        self.lowra_method = None
         
         
     def setup(self, overwrite = None):
@@ -67,7 +69,7 @@ class MachUp(object):
         input_data['airfoil_DB'] = self.airfoil.dbdir
             
         # Set the solver type (linear | nonlinear)
-        input_data['solver']['type'] = self._solver
+        if self.solver is not None: input_data['solver']['type'] = self.solver
 
         # Update the airfoil data
         input_data['wings']['wing_1']['airfoils'] = self.airfoil_data()
@@ -89,7 +91,8 @@ class MachUp(object):
         # Execute MachUp
         cmd = self.cmddir + os.sep + self.cmd
         job = self.jobdir + os.sep + 'input.json'
-        os.system("{} {} > stdout".format(cmd, job))
+        out = self.jobdir + os.sep + 'stdout.txt'
+        os.system("{} {} > {}".format(cmd, job, out))
         
         
     @property
@@ -201,6 +204,7 @@ class MachUp(object):
     def create_job_directory(self, overwrite = None):
         """Creates a directory for the MachUp analysis and copies necessary files
         """
+        if self.jobdir is None: self.jobdir = self.name
         if os.path.isdir(self.jobdir):
             if overwrite is None:
                 print("Directory already exists: " + self.jobdir)
@@ -238,16 +242,22 @@ class MachUp(object):
         # Set the planform info
         wing_template_data['span'] = self.wing.b / 2.0
         wing_template_data['root_chord'] = self.wing.c_root
-        wing_template_data['tip_chord'] = self.wing.c_tip
-        if type(self.wing) == wing.Elliptic: 
+        if type(self.wing) is wing.Elliptic: 
             wing_template_data['tip_chord'] = -1.0
+        else:
+            wing_template_data['tip_chord'] = self.wing.c_tip
         
         # Set the grid size
         wing_template_data['grid'] = int(self.wing.nSec)  # Cast to int because it might be a numpy object
                                                           # which gives "TypeError: # is not JSON serializable"
 
+        # Set the root / tip clustering parameters
+        wing_template_data['root_clustering'] = int(self.wing.root_clustering)
+        wing_template_data['tip_clustering'] = int(self.wing.tip_clustering)
+
         # Set the low-aspect-ratio method
-        wing_template_data['low_aspect_ratio_method'] = self._lowra_method
+        if self.lowra_method is not None:
+            wing_template_data['low_aspect_ratio_method'] = self.lowra_method
         
         return wing_template_data
         
@@ -262,7 +272,11 @@ class MachUp(object):
         
     @property
     def name(self):
-        return "machup_{}_{}".format(self.airfoil.name, self.wing.name)
+        n = "machup_{}_{}".format(self.airfoil.name, self.wing.name)
+        if self.lowra_method is not None and self.lowra_method != 'Classical':
+            n += "_{}".format(self.lowra_method)
+            
+        return n
         
         
     @property

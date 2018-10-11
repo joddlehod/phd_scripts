@@ -1,7 +1,10 @@
 {
 "airfoil_DB": "../AirfoilDatabase",
 "run": {
-    "panair" : "",
+    "panair" : {
+        "endcap_npts": 20,
+        "endcap_scale": 1.0
+    },
     "forces" : "",
     "distributions" : ""
 },

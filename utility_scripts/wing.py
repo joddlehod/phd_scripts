@@ -18,18 +18,21 @@ class Wing(object):
     with control points at the theta (not y) centerpoint of each section.
     """
     
-    def __init__(self, RA, b, nSec, symm = True, suffix = None):
+    def __init__(self, RA, b, nSec, symm = True, suffix = None,
+            root_clustering = False, tip_clustering = True):
         """Constructor
         
         Wing object constructor
         
         Inputs
         ------
-        RA:  Aspect ratio ('Circular' = 4.0 / pi)
-        b:   Wingspan
-        nSec: Number of spanwise wing sections
+        RA: Aspect ratio ('Circular' = 4.0 / pi)
+        b: Wingspan
+        nSec: Number of spanwise wing sections per semispan
         symm: Use symmetry plane? True/False
-        suffix:     String to append to the end of the wing name
+        suffix: String to append to the end of the wing name
+        root_clustering: Use cosine-clustering at the root of the wing?
+        tip_clustering: Use cosine-clustering at the tip of the wing?
         """
         # Aspect Ratio
         self.RAString = RA
@@ -39,41 +42,71 @@ class Wing(object):
         self.b = b                  # Wingspan
         self.nSec = nSec            # Number of spanwise sections per semispan
         
-        if symm:
-            self.basename = "ra{}_grid{}".format(self.RAString, self.nSec)
-        else:
-            self.basename = "ra{}_grid{}_full".format(self.RAString, self.nSec)
-        if suffix is not None: self.basename += "_{}".format(suffix)
-
         # Initialize sections / spanwise coordinates
         self.symm = symm
+        self.root_clustering = root_clustering
+        self.tip_clustering = tip_clustering
         self.create_sections()
     
+        self.basename = 'ra{}_grid{}'.format(self.RAString, self.nSec)
+        if self.root_clustering: self.basename += '_rcOn'
+        if not self.tip_clustering: self.basename += '_tcOff'
+        if not self.symm: self.basename += '_full'
+        if suffix is not None: self.basename += '_{}'.format(suffix)
+
     
     def create_sections(self):
         """Create the spanwise section definitions for the wing
         
         This function is used to initialize the spanwise coordinates of each
         section endpoint and centerpoint. The sections are distributed along
-        the wingspan using cosine clustering (coarse at the root, fine at the
-        tip), with the centerpoints at the theta (not y) centerpoint of each
-        section.
+        the wingspan with the centerpoints at the theta (not y) centerpoint
+        of each section. The section distribution matches that of the MachUp
+        source code.
         
         If the wing is symmetric (self.symm == True), only the positive-y
-        semispan is modeled. Otherwise, both semispans are modeled.
+        semispan is modeled. Otherwise, both semispans are modeled and the
+        total number of spanwise sections is 2*nSec.
         """
-        if self.symm:
-            theta_start = np.pi / 2.0
-            nsec = self.nSec + 1
-        else:
+        linear = False
+        if self.root_clustering and self.tip_clustering:
             theta_start = 0.0
-            nsec = 2 * self.nSec + 1
+            theta_end = np.pi
+            off = 1.0
+            fac = 0.5
+            
+        elif self.root_clustering:
+            theta_start = 0.0
+            theta_end = np.pi / 2.0
+            off = 1.0
+            fac = 1.0
+            
+        elif self.tip_clustering:
+            theta_start = np.pi / 2.0
+            theta_end = np.pi
+            off = 0.0
+            fac = 1.0
+            
+        else:
+            linear = True
+            
+        if linear:
+            self.y = np.linspace(0.0, 0.5, self.nSec + 1)
+            self.yc = np.asarray([(y1 + y2) / 2 for y1, y2 in zip(self.y[:-1], self.y[1:])])
+            
+        else:
+            theta = np.linspace(theta_start, theta_end, self.nSec + 1, True)
+            thetac = np.asarray([(t1 + t2) / 2 for t1, t2 in zip(theta[:-1], theta[1:])])
         
-        self.theta = np.linspace(theta_start, np.pi, nsec, True)
-        self.y = self.ycoord(self.theta)
-        self.thetac = np.asarray([(t1 + t2) / 2.0 for t1, t2 in
-                zip(self.theta[:-1], self.theta[1:])])
-        self.yc = self.ycoord(self.thetac)
+            self.y = self.b / 2 * fac * (off - np.cos(theta))
+            self.yc = self.b / 2 * fac * (off - np.cos(thetac))
+        
+        if not self.symm:
+            self.y = np.concatenate([self.y[::-1], self.y[1::]])
+            self.yc = np.concatenate([self.yc[::-1], self.y[::]])
+            
+        self.theta = self.thetacoord(self.y)
+        self.thetac = self.thetacoord(self.yc)
 
         self.c = self.chord_theta(self.theta)
         self.cc = self.chord_theta(self.thetac)
@@ -135,7 +168,8 @@ class Rectangular(Wing):
     The number of sections is defined by the user, and the wing is divided
     using cosine-clustering toward the wing tip.
     """
-    def __init__(self, RA, b, nSec, symm = True, suffix = None):
+    def __init__(self, RA, b, nSec, symm = True, suffix = None,
+            root_clustering = False, tip_clustering = True):
         """Constructor
         
         Elliptic wing object constructor
@@ -148,7 +182,7 @@ class Rectangular(Wing):
         symm:       Use symmetry plane? True/False
         suffix:     String to append to the end of the wing name
         """
-        super().__init__(RA, b, nSec, symm, suffix)
+        super().__init__(RA, b, nSec, symm, suffix, root_clustering, tip_clustering)
 
                 
     def chord_theta(self, theta):
@@ -183,7 +217,8 @@ class Tapered(Wing):
     The number of sections is defined by the user, and the wing is divided
     using cosine-clustering toward the wing tip.
     """
-    def __init__(self, RA, RT, b, nSec, symm = True, suffix = None):
+    def __init__(self, RA, RT, b, nSec, symm = True, suffix = None,
+            root_clustering = False, tip_clustering = True):
         """Constructor
         
         Elliptic wing object constructor
@@ -198,7 +233,7 @@ class Tapered(Wing):
         suffix:     String to append to the end of the wing name
         """
         self.RT = RT
-        super().__init__(RA, b, nSec, symm, suffix)
+        super().__init__(RA, b, nSec, symm, suffix, root_clustering, tip_clustering)
 
                 
     def chord_theta(self, theta):
@@ -233,7 +268,8 @@ class Elliptic(Wing):
     using cosine-clustering toward the wing tip.
     """
     
-    def __init__(self, RA, b, nSec, symm = True, suffix = None):
+    def __init__(self, RA, b, nSec, symm = True, suffix = None,
+            root_clustering = False, tip_clustering = True):
         """Constructor
         
         Elliptic wing object constructor
@@ -246,7 +282,7 @@ class Elliptic(Wing):
         symm:       Use symmetry plane? True/False
         suffix:     String to append to the end of the wing name
         """
-        super().__init__(RA, b, nSec, symm, suffix)
+        super().__init__(RA, b, nSec, symm, suffix, root_clustering, tip_clustering)
         
     
     def chord_theta(self, theta):
