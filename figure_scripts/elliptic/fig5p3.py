@@ -22,53 +22,32 @@ A_numerical = np.linspace(0.1, 8, 80)
 A_vortexpanel = np.linspace(1, 8, 8)
 a_panair = [panair_wing_cla.cla(c_panair, x) for x in A_vortexpanel]
 a_classical = wing_cla.a_classical(A_analytical, a0)
-a_modified_slender = wing_cla.a_modified_slender(A_analytical, a0)
-a_hodson = wing_cla.a_hodson(A_analytical, a0)
 
 a_machup_classical = [machup_wing_cla.cla(x, lowra_method='Classical') for x in A_numerical]
-a_machup_modified_slender = [machup_wing_cla.cla(x, lowra_method='ModifiedSlender') for x in A_numerical]
-a_machup_hodson = [machup_wing_cla.cla(x, lowra_method='Hodson') for x in A_numerical]
-
-# Define cycles for line patterns and markers
-lines = cycle([(0, ()), (0, (1,1)), (0, (5,5)), (0, (3,5,1,5))])
-markers = cycle(['o', 's', '^', 'D', 'v'])
-lw = 0.5  # Line width
 
 # Set up a new plot
 plt.rc('font', **{'family':'serif', 'serif':['Times New Roman']})
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 10
 plt.rcParams["lines.markersize"] = 4
-plt.figure(figsize = (6.0, 3.667))
+plt.figure(figsize = (4.0, 2.5))
+lw = 0.5  # Line width
 
 # Plot the analytical relations
 lines = cycle([(0, ()), (0, (1,1)), (0, (5,5)), (0, (3,5,1,5))])
-plt.plot([], [], label = r'$Analytical Solutions$', linestyle='none')
 plt.plot(A_analytical, a_classical, label = "Classical lifting line theory",
-        color = 'k', linewidth = lw, linestyle = next(lines))
-plt.plot(A_analytical, a_modified_slender, label = "Modified slender wing theory",
-        color = 'k', linewidth = lw, linestyle = next(lines))
-plt.plot(A_analytical, a_hodson, label = "Hodson",
-        color = 'k', linewidth = lw, linestyle = next(lines))
-plt.plot([], [], label = ' ', linestyle='none')
-plt.plot([], [], label = r'$Numerical Solutions$', linestyle='none')
-plt.plot(A_numerical, a_machup_classical, label = "Classical lifting line theory",
+        color = 'k', linewidth = lw, linestyle = (0, ()))
+plt.plot(A_numerical, a_machup_classical, label = "Phillips and Snyder",
         color = 'k', linestyle = 'none',
         marker = 's', fillstyle = 'none', markevery = 0.05)
-plt.plot(A_numerical, a_machup_modified_slender, label = "Modified slender wing theory",
-        color = 'k', linestyle = 'none',
-        marker = '^', fillstyle = 'none', markevery = 0.05)
-plt.plot(A_numerical, a_machup_hodson, label = "Hodson",
-        color = 'k', linestyle = 'none',
-        marker = 'D', fillstyle = 'none', markevery = 0.05)
 plt.plot(A_vortexpanel, a_panair, label = "Vortex panel method",
         color = 'k', linestyle = 'none',
         marker = 'o', fillstyle = 'full')
 
-plt.legend(loc = 'lower right', prop={'size': 8}, ncol = 2,
+plt.legend(loc = 'lower right', prop={'size': 8}, ncol = 1,
         framealpha = 1.0, numpoints = 1)
 plt.xlabel(r'$A$')
-plt.ylabel(r'$a$')#, rotation = 0, fontsize = 12)
+plt.ylabel(r'$a$  $(\mathrm{rad}^{-1})$')
 
 plt.tight_layout()
 plt.xlim(0, 8)

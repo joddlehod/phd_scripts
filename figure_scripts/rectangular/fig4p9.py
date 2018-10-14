@@ -57,7 +57,7 @@ for i, A in enumerate(RA):
             marker = next(markers), fillstyle = 'full', markevery = 0.05)
 
 markers = cycle(['s', '^', 'D', 'o'])
-p1, = plt.plot([], [], label='Classical lifting line theory', linestyle = 'none',
+p1, = plt.plot([], [], label='Classical lifting theory', linestyle = 'none',
         color = 'k', marker = next(markers), fillstyle = 'none')
 p2, = plt.plot([], [], label='Modified slender wing line theory', linestyle = 'none',
         color = 'k', marker = next(markers), fillstyle = 'none')
@@ -75,7 +75,7 @@ p7 = plt.plot([], [], label='$A = 0.5$',
         color = 'k', linewidth = lw, linestyle = next(lines))
         
 handles1 = [p1, p2, p3, p4]
-labels1 = ['Classical lifting line theory', 'Modified slender wing line theory', 'Hodson', 'Vortex panel method']
+labels1 = ['Classical lifting line theory', 'Modified slender wing theory', 'Hodson', 'Vortex panel method']
 l1 = plt.legend(handles1, labels1, loc = 'upper right', prop={'size':8}, ncol = 1, framealpha = 1.0, numpoints = 1)
 
 handles2 = [p5[0], p6[0], p7[0]]

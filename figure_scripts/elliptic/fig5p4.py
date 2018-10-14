@@ -68,9 +68,26 @@ plt.plot(A_vortexpanel, a_panair, label = "Vortex panel method",
 plt.legend(loc = 'lower right', prop={'size': 8}, ncol = 2,
         framealpha = 1.0, numpoints = 1)
 plt.xlabel(r'$A$')
-plt.ylabel(r'$a$')#, rotation = 0, fontsize = 12)
+plt.ylabel(r'$a$  $(\mathrm{rad}^{-1})$')
 
 plt.tight_layout()
 plt.xlim(0, 8)
 plt.ylim(0, 5)
 plt.show()
+
+for i, A in enumerate(A_vortexpanel):
+    a_classical = wing_cla.a_classical(A, a0)
+    a_modified_slender = wing_cla.a_modified_slender(A, a0)
+    a_hodson = wing_cla.a_hodson(A, a0)
+    a_machup_classical = machup_wing_cla.cla(A, lowra_method='Classical')
+    a_machup_modified_slender = machup_wing_cla.cla(A, lowra_method='ModifiedSlender')
+    a_machup_hodson = machup_wing_cla.cla(A, lowra_method='Hodson')
+    
+#    print("{:3.1f}\t{:15.7e}\t{:15.7e}\t{:15.7e}\t{:15.7e}\t".format(A, a_classical,
+#            abs(a_classical - a_machup_classical) / a_classical * 100,
+#            abs(a_modified_slender - a_machup_modified_slender) / a_modified_slender * 100,
+#            abs(a_hodson - a_machup_hodson) / a_hodson * 100))
+    print("{:3.1f}\t{:15.7e}\t{:15.7e}\t{:15.7e}\t{:15.7e}\t{:15.7e}\t{:15.7e}\t{:15.7e}\t".format(A,
+            a_classical, a_machup_classical,
+            a_modified_slender, a_machup_modified_slender,
+            a_hodson, a_machup_hodson, abs(a_machup_hodson - a_panair[i]) / a_panair[i] * 100))

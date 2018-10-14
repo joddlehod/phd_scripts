@@ -15,6 +15,9 @@ plt.rcParams["font.size"] = 10
 plt.rcParams["lines.markersize"] = 4
 
 
+# Define the grid discretization
+npts = 100
+
 def _run_machup(RA, RT = None, solver = None, lowra_method = None,
         root_clustering = None, tip_clustering = None, viz = False):
     """Calculate the wing lift slope of a tapered wing using MachUp
@@ -33,9 +36,6 @@ def _run_machup(RA, RT = None, solver = None, lowra_method = None,
         tip_clustering = Use cosine-clustering at the tip? (True/False)
         viz = Visualize the spanwise lift coefficient? True/False
     """
-    # Define the grid discretization
-    npts = 100
-
     # Determine the average chord length to use for best results
     c = 1.0
 
@@ -83,7 +83,7 @@ def _run_machup(RA, RT = None, solver = None, lowra_method = None,
 def sec_cl(RA, RT = None, solver = None, lowra_method = 'Classical',
         root_clustering = None, tip_clustering = None, viz = False):
     m = _run_machup(RA, RT, solver, lowra_method, root_clustering, tip_clustering, viz)
-    return (m.sec_y / m.wing.b, m.sec_CL)
+    return (m.sec_y[:npts] / m.wing.b, m.sec_CL[:npts], m.sec_c[:npts])
     
     
 def cla(RA, RT = None, solver = None, lowra_method = 'Classical',

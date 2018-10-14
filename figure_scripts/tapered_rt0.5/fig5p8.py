@@ -10,6 +10,8 @@ from phd_scripts.utility_scripts import panair_wing_cla
 from phd_scripts.utility_scripts import machup_wing_cla
 from phd_scripts.utility_scripts import wing
 
+# Taper Ratio
+RT = 0.5
 
 # Aspect ratios to consider
 RA = [8.0, 2.0, 0.5]
@@ -21,14 +23,14 @@ a0 = 2.0 * np.pi
 c = 10.0
 
 sec_cl_panair = []
-sec_cl_pralines_classical = []
-sec_cl_pralines_modifiedslender = []
-sec_cl_pralines_hodson = []
+sec_cl_machup_classical = []
+sec_cl_machup_modifiedslender = []
+sec_cl_machup_hodson = []
 for A in RA:
-    sec_cl_panair.append(panair_wing_cla.sec_cl(c, A, RT=0.75, viz=True))
-    sec_cl_pralines_classical.append(pralines_wing_cla.sec_cl(A, RT=0.75, lowra='Classical'))
-    sec_cl_pralines_modifiedslender.append(pralines_wing_cla.sec_cl(A, RT=0.75, lowra='ModifiedSlender'))
-    sec_cl_pralines_hodson.append(pralines_wing_cla.sec_cl(A, RT=0.75, lowra='Hodson'))
+    sec_cl_panair.append(panair_wing_cla.sec_cl(c, A, RT, viz=False))
+    sec_cl_machup_classical.append(machup_wing_cla.sec_cl(A, RT, lowra_method='Classical'))
+    sec_cl_machup_modifiedslender.append(machup_wing_cla.sec_cl(A, RT, lowra_method='ModifiedSlender'))
+    sec_cl_machup_hodson.append(machup_wing_cla.sec_cl(A, RT, lowra_method='Hodson'))
     
 # Set up a new plot
 plt.rc('font', **{'family':'serif', 'serif':['Times New Roman']})
@@ -43,23 +45,23 @@ lines = cycle([(0, ()), (0, (5,5)), (0, (1,1)), (0, (3,5,1,5))])
 for i, A in enumerate(RA):
     line = next(lines)
     markers = cycle(['s', '^', 'D', 'o'])
-    plt.plot(sec_cl_pralines_classical[i][0], np.asarray(sec_cl_pralines_classical[i][1]) * np.asarray(sec_cl_pralines_classical[i][2]),
+    plt.plot(sec_cl_machup_classical[i][0], np.asarray(sec_cl_machup_classical[i][1]) * np.asarray(sec_cl_machup_classical[i][2]),
             color = 'k', linewidth = lw, linestyle = line,
             marker = next(markers), fillstyle = 'none', markevery = 0.05)
-    plt.plot(sec_cl_pralines_modifiedslender[i][0], np.asarray(sec_cl_pralines_modifiedslender[i][1]) * np.asarray(sec_cl_pralines_modifiedslender[i][2]),
+    plt.plot(sec_cl_machup_modifiedslender[i][0], np.asarray(sec_cl_machup_modifiedslender[i][1]) * np.asarray(sec_cl_machup_modifiedslender[i][2]),
             color = 'k', linewidth = lw, linestyle = line,
             marker = next(markers), fillstyle = 'none', markevery = 0.05)
-    plt.plot(sec_cl_pralines_hodson[i][0], np.asarray(sec_cl_pralines_hodson[i][1]) * np.asarray(sec_cl_pralines_hodson[i][2]),
+    plt.plot(sec_cl_machup_hodson[i][0], np.asarray(sec_cl_machup_hodson[i][1]) * np.asarray(sec_cl_machup_hodson[i][2]),
             color = 'k', linewidth = lw, linestyle = line,
             marker = next(markers), fillstyle = 'none', markevery = 0.05)
-    plt.plot(sec_cl_panair[i][0], np.asarray(sec_cl_panair[i][1]) * np.asarray(sec_cl_panair[i][2]) / 10.0,
+    plt.plot(sec_cl_panair[i][0][1:], np.asarray(sec_cl_panair[i][1][1:]) * np.asarray(sec_cl_panair[i][2][1:]) / 10.0,
             color = 'k', linewidth = lw, linestyle = line,
             marker = next(markers), fillstyle = 'full', markevery = 0.05)
 
 markers = cycle(['s', '^', 'D', 'o'])
 p1, = plt.plot([], [], label='Classical lifting line theory', linestyle = 'none',
         color = 'k', marker = next(markers), fillstyle = 'none')
-p2, = plt.plot([], [], label='Modified slender wing theory', linestyle = 'none',
+p2, = plt.plot([], [], label='Modified slender wing line theory', linestyle = 'none',
         color = 'k', marker = next(markers), fillstyle = 'none')
 p3, = plt.plot([], [], label='Hodson', linestyle = 'none',
         color = 'k', marker = next(markers), fillstyle = 'none')

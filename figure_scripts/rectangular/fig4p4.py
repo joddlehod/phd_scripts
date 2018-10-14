@@ -57,8 +57,7 @@ cla_panair = [panair_wing_cla.cla(c, x, rt, False) for x in A_panair]
 #cla_machup = [machup_wing_cla_tapered.a_machup(x, rt, False) for x in A_panair]
 
 # Define cycles for line patterns and markers
-#lines = cycle([(0, ()), (0, (1,1)), (0, (10,10)), (0, (3,10,1,10)), (0, (10,10,5,10)), (0, (3,10,1,10,1,10)), (0, (5,10)), (0, (15,5,1,5,5,5,1,5)), (0, (1,5))])
-lines = cycle([(0, ()), (0, (1,1)), (0, (10,10)), (0, (3,10,1,10))])
+lines = cycle([(0, ()), (0, (1,1)), (0, (5,5)), (0, (3,5,1,5))])
 markers = cycle(['o', 's', '^', 'D', 'v'])
 lw = 0.5  # Line width
 
@@ -70,7 +69,7 @@ plt.rcParams["lines.markersize"] = 4
 plt.figure(figsize = (4.0, 2.5))
 
 # Plot the analytical relations
-lines = cycle([(0, ()), (0, (1,1)), (0, (10,10)), (0, (3,10,1,10))])
+lines = cycle([(0, ()), (0, (1,1)), (0, (5,5)), (0, (3,5,1,5))])
 plt.plot(A, a_classical, label = "Classical lifting line theory",
         color = 'k', linewidth = lw, linestyle = next(lines))
 #plt.plot(A, a_slender, label = "Slender wing theory",
@@ -81,7 +80,6 @@ plt.plot(A, a_modified_slender, label = "Modified slender wing theory",
 #plt.plot([], [], label = ' ', color = 'w')
         
 # Plot the empirical relations
-#lines = cycle([(0, ()), (0, (1,1)), (0, (10,10)), (0, (3,10,1,10))])
 markers = cycle(['o', 's', '^', 'D', 'v'])
 plt.plot(A, a_hodson, label = "Hodson",
         color = 'k', linewidth = lw, linestyle = next(lines))
@@ -104,22 +102,16 @@ plt.plot(A_panair, cla_panair, label = "Vortex panel method",
 #plt.plot(A_panair, cla_machup, label = "MachUp",
 #       color = 'k', linestyle = 'none', marker = next(markers), fillstyle = 'full')
 
-plt.legend(loc = 'lower right', handlelength = 5, prop={'size': 8}, ncol = 1,
+plt.legend(loc = 'lower right', prop={'size': 8}, ncol = 1,
         framealpha = 1.0, numpoints = 1)
+
 plt.xlabel(r'$A$')
-plt.ylabel(r'$a$')#, rotation = 0, fontsize = 12)
-# xticks = [-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0]
-# xticklabels0 = ['0']
-# xticklabelsLow = ['{:4.2F}'.format(4.0 / np.pi * np.sqrt(1.0 - abs(x))) for x in xticks[1:4]]
-# xticklabelsCirc = [r'$4/\pi$']
-# xticklabelsHigh = ['{:4.2F}'.format(4.0 / np.pi / np.sqrt(1.0 - abs(x))) for x in xticks[5:-1]]
-# xticklabelsInf = [r'$\infty$']
-# plt.xticks(xticks, np.concatenate((xticklabels0, xticklabelsLow, xticklabelsCirc, xticklabelsHigh, xticklabelsInf)))
-plt.tight_layout()
+plt.ylabel(r'$a$  $(\mathrm{rad}^{-1})$')
 plt.xlim(0, 8)
 plt.ylim(0.0, 5.0)
+
+plt.tight_layout()
 plt.show()
 
 pct_diff = [abs(ap - ah) / ap for ap, ah in zip(cla_panair, a_hodson[9::10])]
 for p in pct_diff: print(p)
-    

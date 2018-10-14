@@ -49,6 +49,7 @@ class Wing(object):
         self.create_sections()
     
         self.basename = 'ra{}_grid{}'.format(self.RAString, self.nSec)
+        if self.b != self.RA: self.basename += '_b{}'.format(self.b)
         if self.root_clustering: self.basename += '_rcOn'
         if not self.tip_clustering: self.basename += '_tcOff'
         if not self.symm: self.basename += '_full'

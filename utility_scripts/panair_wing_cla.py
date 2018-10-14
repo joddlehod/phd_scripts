@@ -78,22 +78,24 @@ def sec_cl(c, RA, RT = None, root_clustering = False, tip_clustering = True,
         
         # Plot the extrapolated lift distribution
         if viz:
-            plt.figure(figsize=(6.0, 5.0))
+            plt.figure(figsize = (4.0, 2.5))
             max_cl = 0.0
             for npt, p, m in zip(npts, res, markers):
                 plt.plot(p.sec_y / b, p.sec_CL, label='{0} x {0}'.format(npt), color='k',
-                        linestyle=(0, ()), marker=m, fillstyle='none', markersize=6)
+                        linestyle=(0, ()), marker=m, fillstyle='none', markevery=0.05)
                 max_cl = max(max_cl, max(p.sec_CL))
 
             plt.plot(y_ext / b, cl_ext, label='Extrapolated', color='k',
-                    linestyle=(0, ()), marker='x', fillstyle='none', markersize=6)
+                    linestyle=(0, ()), marker='x', fillstyle='none', markevery=0.05)
             max_cl = max(max_cl, max(cl_ext))
                     
             plt.xlabel(r'$y/b$')
-            plt.ylabel(r'Section $C_L$')
+            plt.ylabel(r'$c_l$')
             plt.xlim(0.0, 0.5)
             plt.ylim(0.0, 1.1 * max_cl)
-            plt.legend(loc='lower left')
+            plt.legend(loc = 'lower left', prop={'size': 8}, ncol = 1,
+                    framealpha = 1.0, numpoints = 1)
+            plt.tight_layout()
             plt.show()
         
         # Add the mesh-extrapolated results to the list
@@ -107,23 +109,24 @@ def sec_cl(c, RA, RT = None, root_clustering = False, tip_clustering = True,
     # Plot the spanwise lift distribution for each mesh-extrapolated result
     if viz:
         # Plot the individual mesh-extrapolated results
-        plt.figure(figsize=(6.0, 5.0))
+        plt.figure(figsize = (4.0, 2.5))
         max_cl = 0.0
         for t, y, cl, m in zip(ts, ys, cls, markers):
             plt.plot(y, cl, label='t = {:.0F}%'.format(100 * t), color='k',
-                    linestyle=(0, ()), marker=m, fillstyle='none', markersize=6)
+                    linestyle=(0, ()), marker=m, fillstyle='none')
             max_cl = max(max_cl, max(cl))
 
         # Plot the final extrapolated (t = 0, mesh = infinity) lift distribution
-        plt.plot(ys[0], cl_ext, label='t = 0% (extr.)', color='k',
-                linestyle=(0, ()), marker='x', fillstyle='none', markersize=6)
+        plt.plot(ys[0], cl_ext, label='t = 0% (Extrapolated)', color='k',
+                linestyle=(0, ()), marker='x', fillstyle='none')
         max_cl = max(max_cl, max(cl_ext))
                 
         plt.xlabel(r'$y/b$')
-        plt.ylabel(r'Section $C_L$')
+        plt.ylabel(r'$c_l$')
         plt.xlim(0.0, 0.5)
         plt.ylim(0.0, 1.1 * max_cl)
-        plt.legend(loc='lower left')
+        plt.legend(loc = 'lower left', prop={'size': 8}, ncol = 1,
+                framealpha = 1.0, numpoints = 1)
         plt.tight_layout()
         plt.show()
 

@@ -121,20 +121,20 @@ plt.plot([], [], label = ' ', color = 'w')
 markers = cycle(['o', 's', '^', 'D', 'v'])
 plt.plot(A_panair, cla_panair, label = "Vortex panel",
        color = 'k', linestyle = 'none', marker = next(markers), fillstyle = 'full')
-plt.plot(kinner[0], kinner[2], label = "Kinner (1937)",
+plt.plot(kinner[0], kinner[2], label = "Kinner",
         color = 'k', linestyle = 'none', marker = next(markers), fillstyle = 'full')
-plt.plot(krienes[0], krienes[2], label = "Krienes (1941)",
+plt.plot(krienes[0], krienes[2], label = "Krienes",
         color = 'k', linestyle = 'none', marker = next(markers), fillstyle = 'full')
-plt.plot(jordan[0], jordan[2], label = "Jordan (1974)",
+plt.plot(jordan[0], jordan[2], label = "Jordan",
         color = 'k', linestyle = 'none', marker = next(markers), fillstyle = 'full')
-plt.plot(medan[0], medan[2], label = "Medan (1974)",
+plt.plot(medan[0], medan[2], label = "Medan",
         color = 'k', linestyle = 'none', marker = next(markers), fillstyle = 'full')
 
 plt.legend(loc = 'lower right', prop={'size': 8}, ncol = 3,
         framealpha = 1.0, numpoints = 1)
 
 plt.xlabel(r'$A$')
-plt.ylabel(r'$a$')
+plt.ylabel(r'$a$  $(\mathrm{rad}^{-1})$')
 plt.xlim(0, 8)
 plt.ylim(0, 5.5)
 
